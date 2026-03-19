@@ -118,12 +118,6 @@ bilingual-srt "./movie.srt" --translation-first
 bilingual-srt "./movie.srt" --output "./custom-output.srt"
 ```
 
-You can also skip `npm link` and run it directly from the project folder:
-
-```bash
-node ./bin/bilingual-srt.js "./movie.srt"
-```
-
 ## What it prints
 
 For larger files, the CLI shows a compact progress bar instead of printing every subtitle line:
