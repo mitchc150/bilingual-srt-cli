@@ -9,7 +9,9 @@ Cross-platform CLI for turning an English `.srt` file into a bilingual subtitle 
 
 ## Install
 
-From this project folder:
+The project is not yet linked to npm, although this is on the roadmap.
+
+For now, from this project folder:
 
 ```bash
 npm link
