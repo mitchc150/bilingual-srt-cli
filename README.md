@@ -61,7 +61,7 @@ Available config keys:
 - `chunk-size`
 - `timeout-seconds`
 
-## Run it
+## Usage
 
 Basic usage:
 
@@ -76,6 +76,32 @@ Example output file:
 ```
 
 The tool keeps the English subtitle text, adds Vietnamese under each cue, and writes the result beside the original file by default.
+
+The CLI shows a compact progress bar:
+
+```text
+Translating movie.srt into bilingual Vietnamese subtitles...
+Starting chunk 4/9 (batch 2/3)
+[===========         ] 5/9 chunks complete
+```
+
+If a chunk comes back with the wrong number of translated lines, the tool automatically splits and retries that chunk:
+
+```text
+Chunk retry: split 100 cues into 50 + 50 because Expected 100 translations but received 103
+```
+
+### Options
+
+```bash
+bilingual-srt "./movie.srt" --model gpt-4o-mini
+bilingual-srt "./movie.srt" --target-language Vietnamese
+bilingual-srt "./movie.srt" --concurrency 5
+bilingual-srt "./movie.srt" --chunk-size 100
+bilingual-srt "./movie.srt" --timeout-seconds 120
+bilingual-srt "./movie.srt" --translation-first
+bilingual-srt "./movie.srt" --output "./custom-output.srt"
+```
 
 ## How it works
 
@@ -104,62 +130,3 @@ Default starting values:
 
 - `chunk-size 100`
 - `concurrency 3`
-
-If you want more speed, try `concurrency 5`.
-If you see malformed responses or retries, lower `chunk-size`.
-
-## Options
-
-```bash
-bilingual-srt "./movie.srt" --model gpt-4o-mini
-bilingual-srt "./movie.srt" --target-language Vietnamese
-bilingual-srt "./movie.srt" --concurrency 5
-bilingual-srt "./movie.srt" --chunk-size 100
-bilingual-srt "./movie.srt" --timeout-seconds 120
-bilingual-srt "./movie.srt" --translation-first
-bilingual-srt "./movie.srt" --output "./custom-output.srt"
-```
-
-## What it prints
-
-For larger files, the CLI shows a compact progress bar instead of printing every subtitle line:
-
-```text
-Translating movie.srt into bilingual Vietnamese subtitles...
-Starting chunk 4/9 (batch 2/3)
-[===========         ] 5/9 chunks complete
-```
-
-If a chunk comes back with the wrong number of translated lines, the tool automatically splits and retries that chunk:
-
-```text
-Chunk retry: split 100 cues into 50 + 50 because Expected 100 translations but received 103
-```
-
-## How translation requests work
-
-The tool parses the `.srt` locally, keeps timestamps and cue numbers locally, and only sends subtitle text to OpenAI.
-
-Example request payload shape:
-
-```json
-{
-  "lines": [
-    "Hello there.",
-    "How are you?",
-    "<i>Come on!</i>"
-  ]
-}
-```
-
-Expected response shape:
-
-```json
-{
-  "translations": [
-    "Xin chào.",
-    "Bạn khỏe không?",
-    "<i>Thôi nào!</i>"
-  ]
-}
-```
