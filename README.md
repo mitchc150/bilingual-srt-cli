@@ -167,15 +167,3 @@ Expected response shape:
   ]
 }
 ```
-
-The CLI then matches each translated line back to the original cue by array position and rebuilds the final `.srt` file locally.
-
-## Notes
-
-- Default model: `gpt-4o-mini`
-- Default chunking is conservative so large subtitle files are less likely to fail.
-- Default concurrency is `3`
-- Translation quality depends on the source subtitles and model choice.
-- `--api-key` still works if you want to override the saved key for a single run.
-- Flags override saved config values for that run only.
-- The tool automatically retries some malformed chunk responses by splitting them into smaller requests.
