@@ -2,14 +2,6 @@
 
 Cross-platform CLI for turning an English `.srt` file into a bilingual subtitle file using your OpenAI API key.
 
-## Why this shape
-
-- Works on macOS and Windows with the same Node.js codebase.
-- No third-party dependencies, so setup stays light.
-- Keeps the original cue timing and numbering, then appends a translated line under each English subtitle.
-- Lets you save your API key securely instead of keeping it in shell config files.
-- Shows live progress while translating larger subtitle files.
-
 ## Requirements
 
 - Node.js 18 or newer
@@ -106,7 +98,7 @@ In practice:
 - Higher `concurrency` can make runs faster, but may increase rate limits, retries, or timeouts.
 - Lower `concurrency` is slower, but is usually more stable.
 
-Good starting values:
+Default starting values:
 
 - `chunk-size 100`
 - `concurrency 3`
@@ -169,9 +161,9 @@ Expected response shape:
 ```json
 {
   "translations": [
-    "Xin chao.",
-    "Ban khoe khong?",
-    "<i>Thoi nao!</i>"
+    "Xin chào.",
+    "Bạn khỏe không?",
+    "<i>Thôi nào!</i>"
   ]
 }
 ```
