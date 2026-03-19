@@ -61,6 +61,13 @@ Available config keys:
 - `chunk-size`
 - `timeout-seconds`
 
+Default starting values:
+- `language Vietnamese`
+- `model gpt-4o-mini`
+- `concurrency 3`
+- `chunk-size 100`
+- `timeout-seconds 90`
+
 ## Usage
 
 Basic usage:
@@ -75,7 +82,7 @@ Example output file:
 /same/folder/movie.bilingual.vietnamese.srt
 ```
 
-The tool keeps the English subtitle text, adds Vietnamese under each cue, and writes the result beside the original file by default.
+The tool keeps the English subtitle text, adds a translation under each cue, and writes the result beside the original file by default.
 
 The CLI shows a compact progress bar:
 
@@ -125,8 +132,3 @@ In practice:
 - Lower `chunk-size` means more API calls, but each request is easier for the model to keep aligned.
 - Higher `concurrency` can make runs faster, but may increase rate limits, retries, or timeouts.
 - Lower `concurrency` is slower, but is usually more stable.
-
-Default starting values:
-
-- `chunk-size 100`
-- `concurrency 3`
