@@ -1,0 +1,189 @@
+# bilingual-srt
+
+Cross-platform CLI for turning an English `.srt` file into a bilingual subtitle file using your OpenAI API key.
+
+## Why this shape
+
+- Works on macOS and Windows with the same Node.js codebase.
+- No third-party dependencies, so setup stays light.
+- Keeps the original cue timing and numbering, then appends a translated line under each English subtitle.
+- Lets you save your API key securely instead of keeping it in shell config files.
+- Shows live progress while translating larger subtitle files.
+
+## Requirements
+
+- Node.js 18 or newer
+- An OpenAI API key
+
+## Install
+
+From this project folder:
+
+```bash
+npm link
+```
+
+That exposes the `bilingual-srt` command in your shell on both macOS and Windows.
+
+## Save your API key
+
+```bash
+bilingual-srt key set
+```
+
+On macOS this stores the key in Keychain.
+On Windows this stores the key in a user-protected encrypted store tied to your account.
+
+You can check or remove the saved key later:
+
+```bash
+bilingual-srt key status
+bilingual-srt key remove
+```
+
+## Save your personal defaults
+
+You can store per-user defaults for common settings:
+
+```bash
+bilingual-srt config set language Vietnamese
+bilingual-srt config set model gpt-4o-mini
+bilingual-srt config set concurrency 5
+bilingual-srt config set chunk-size 100
+```
+
+Inspect or remove them later:
+
+```bash
+bilingual-srt config show
+bilingual-srt config unset model
+```
+
+Available config keys:
+
+- `language`
+- `model`
+- `concurrency`
+- `chunk-size`
+- `timeout-seconds`
+
+## Run it
+
+Basic usage:
+
+```bash
+bilingual-srt "/path/to/movie.srt"
+```
+
+Example output file:
+
+```text
+/same/folder/movie.bilingual.vietnamese.srt
+```
+
+The tool keeps the English subtitle text, adds Vietnamese under each cue, and writes the result beside the original file by default.
+
+## How it works
+
+The CLI does not send the whole subtitle file as one giant request.
+
+Instead it:
+
+1. Parses the `.srt` locally
+2. Splits the subtitle cues into chunks
+3. Sends several chunk requests to OpenAI in parallel
+4. Reassembles the translated chunks back into one bilingual `.srt`
+
+The two most important tuning knobs are `chunk-size` and `concurrency`.
+
+- `chunk-size` controls how many subtitle cues go into each OpenAI request.
+- `concurrency` controls how many chunk requests are sent at the same time.
+
+In practice:
+
+- Higher `chunk-size` means fewer API calls, but each request is heavier and can be less reliable.
+- Lower `chunk-size` means more API calls, but each request is easier for the model to keep aligned.
+- Higher `concurrency` can make runs faster, but may increase rate limits, retries, or timeouts.
+- Lower `concurrency` is slower, but is usually more stable.
+
+Good starting values:
+
+- `chunk-size 100`
+- `concurrency 3`
+
+If you want more speed, try `concurrency 5`.
+If you see malformed responses or retries, lower `chunk-size`.
+
+## Options
+
+```bash
+bilingual-srt "./movie.srt" --model gpt-4o-mini
+bilingual-srt "./movie.srt" --target-language Vietnamese
+bilingual-srt "./movie.srt" --concurrency 5
+bilingual-srt "./movie.srt" --chunk-size 100
+bilingual-srt "./movie.srt" --timeout-seconds 120
+bilingual-srt "./movie.srt" --translation-first
+bilingual-srt "./movie.srt" --output "./custom-output.srt"
+```
+
+You can also skip `npm link` and run it directly from the project folder:
+
+```bash
+node ./bin/bilingual-srt.js "./movie.srt"
+```
+
+## What it prints
+
+For larger files, the CLI shows a compact progress bar instead of printing every subtitle line:
+
+```text
+Translating movie.srt into bilingual Vietnamese subtitles...
+Starting chunk 4/9 (batch 2/3)
+[===========         ] 5/9 chunks complete
+```
+
+If a chunk comes back with the wrong number of translated lines, the tool automatically splits and retries that chunk:
+
+```text
+Chunk retry: split 100 cues into 50 + 50 because Expected 100 translations but received 103
+```
+
+## How translation requests work
+
+The tool parses the `.srt` locally, keeps timestamps and cue numbers locally, and only sends subtitle text to OpenAI.
+
+Example request payload shape:
+
+```json
+{
+  "lines": [
+    "Hello there.",
+    "How are you?",
+    "<i>Come on!</i>"
+  ]
+}
+```
+
+Expected response shape:
+
+```json
+{
+  "translations": [
+    "Xin chao.",
+    "Ban khoe khong?",
+    "<i>Thoi nao!</i>"
+  ]
+}
+```
+
+The CLI then matches each translated line back to the original cue by array position and rebuilds the final `.srt` file locally.
+
+## Notes
+
+- Default model: `gpt-4o-mini`
+- Default chunking is conservative so large subtitle files are less likely to fail.
+- Default concurrency is `3`
+- Translation quality depends on the source subtitles and model choice.
+- `--api-key` still works if you want to override the saved key for a single run.
+- Flags override saved config values for that run only.
+- The tool automatically retries some malformed chunk responses by splitting them into smaller requests.
